@@ -66,6 +66,37 @@ int simularOtimo(int totalQuadros, const vector<int>& referencias) {
     }
     return faltasPagina;
 }
+int simularLRU(int totalQuadros, const vector<int>& referencias){
+    vector<int> memoria;
+    list<int> listaLRU;
+
+    int tam = totalQuadros;
+    int faltasPagina = 0;   
+    int indiceSubstituicao = 0;
+
+    for (int i = 0; i < referencias.size(); i++) {
+        
+        auto it = find(memoria.begin(), memoria.end(), referencias[i]);
+        if(it == memoria.end()){//nao esta na memoria ou a memoria esta vazia
+            faltasPagina++; 
+
+            if(memoria.size() < tam){//memoria vazia
+                memoria.push_back(referencias[i]);
+                listaLRU.push_back(referencias[i]);
+
+            }else{//memoria ocupada
+                indiceSubstituicao = find(memoria.begin(), memoria.end(), listaLRU.front()) - memoria.begin();//coloca o menos usado na memoria
+                memoria[indiceSubstituicao] = referencias[i]; 
+                listaLRU.pop_front();
+                listaLRU.push_back(referencias[i]); 
+            }
+        }else{//achou na memoria
+            listaLRU.erase(find(listaLRU.begin(), listaLRU.end(), referencias[i]));
+            listaLRU.push_back(referencias[i]);
+        }//coloca no fim da lista de menos usados
+    } 
+    return faltasPagina;
+}
     
 int main() {
     ifstream arquivo("dados.txt");
@@ -86,10 +117,13 @@ int main() {
     }
 
     int faltasFIFO = simularFIFO(totalQuadros, referencias);
-    int faltaOtimo = simularOtimo(totalQuadros, referencias);    
+    int faltaOtimo = simularOtimo(totalQuadros, referencias);   
+    int faltaLRU = simularLRU(totalQuadros, referencias);    
+ 
 
     cout << "FIFO " << faltasFIFO << "\n";
     cout << "Otimo " << faltaOtimo << "\n";
+    cout << "LRU " << faltaLRU << "\n";
 
     return 0;
 }
